@@ -338,14 +338,40 @@ qui élargit le nuage à chaque redistribution.
 
 Le filtre est aléatoire : deux exécutions ne donnent pas le même résultat. Pour
 comparer les réglages, nous avons lancé le filtre $20$ fois pour chaque valeur, avec
-des tirages différents. On compte le nombre de divergences (erreur horizontale finale
-supérieure à $500$~m) et on donne l'erreur horizontale moyenne sur la seconde moitié
-du vol. Cette moyenne est calculée uniquement sur les essais qui n'ont pas divergé :
-quand le filtre diverge, son erreur peut atteindre des milliers de kilomètres et
-fausserait la moyenne. Dans les tableaux, un tiret (--) signifie que presque tous les
-essais ont divergé et que la moyenne n'a donc pas de sens.
+des tirages différents, en ne changeant qu'un seul paramètre à la fois par rapport au
+scénario de référence.
+
+Pour chaque essai, on calcule l'erreur horizontale à l'instant $k$, c'est-à-dire la
+distance entre la position vraie et la position estimée :
+\begin{equation}
+e_k = \sqrt{(x_k - \hat x_k)^2 + (y_k - \hat y_k)^2}.
+\end{equation}
+Les tableaux donnent ensuite trois grandeurs :
+\begin{itemize}
+\item \textbf{Divergences :} le nombre d'essais pour lesquels l'erreur à la fin du vol
+dépasse $500$~m, soit $e_T > 500$~m avec $T = 720$~s.
+\item \textbf{Erreur moyenne :} la moyenne de $e_k$ sur la seconde moitié du vol,
+\begin{equation}
+\bar e = \frac{2}{T} \sum_{k = T/2}^{T-1} e_k ,
+\end{equation}
+elle-même moyennée sur les essais qui n'ont pas divergé. On prend la seconde moitié du
+vol pour mesurer la précision une fois le filtre convergé.
+\item \textbf{Redistributions par vol :} le nombre moyen d'instants où
+$N_{\mathrm{eff}} < N_{\mathrm{th}}$ pendant un vol.
+\end{itemize}
+
+L'erreur moyenne n'est calculée que sur les essais qui n'ont pas divergé : quand le
+filtre diverge, son erreur peut atteindre des milliers de kilomètres et fausserait la
+moyenne. Dans les tableaux, un tiret (--) signifie que presque tous les essais ont
+divergé et que la moyenne n'a donc pas de sens.
 
 \subsection{Nombre de particules}
+
+Le nombre de particules $N$ fixe la finesse de l'approximation
+$p(x_k \mid Y_{1:k}) \approx \sum_{j=1}^{N} w_k^j \, \delta(x - X_k^j)$ : plus $N$ est
+grand, mieux le nuage couvre l'espace d'état, mais plus le calcul est long. On fait
+varier $N$ de $500$ à $10000$. La figure \ref{fig:N} montre l'erreur horizontale $e_k$
+pour un même tirage, et le tableau donne les résultats sur $20$ essais.
 
 \begin{figure}[H]
     \centering
@@ -378,6 +404,11 @@ pas par le nombre de particules. La valeur $N = 5000$ est donc un bon
 choix, et augmenter $N$ ne ferait qu'allonger le temps de calcul.
 
 \subsection{Coefficient de régularisation}
+
+Le pas de régularisation s'écrit $h = c \times h_{\mathrm{opt}}$, où $c$ est le
+coefficient \texttt{CoefHopt}. On fait varier $c$ de $0$ à $1$. Pour $c = 0$, le
+décalage $h \, P_k^{1/2} \varepsilon$ ajouté aux particules est nul : on retrouve le
+filtre SIR sans régularisation. Pour $c = 1$, on utilise le pas optimal sans le réduire.
 
 \begin{figure}[H]
     \centering
@@ -428,6 +459,11 @@ gaussien. Le choix du noyau ne change presque rien ; le noyau gaussien est plus 
 
 \subsection{Seuil de redistribution}
 
+On redistribue les particules quand $N_{\mathrm{eff}} < N_{\mathrm{th}} = c \times N$,
+où $c$ est le coefficient \texttt{CoefResampling}. Plus $c$ est grand, plus on
+redistribue souvent ; pour $c = 1$ la condition est presque toujours vraie et on
+redistribue à chaque pas. On fait varier $c$ de $0{,}2$ à $1$.
+
 \begin{table}[H]
 \centering
 \begin{tabular}{lccc}
@@ -451,6 +487,10 @@ chaque régularisation élargit le nuage. Il vaut donc mieux ne redistribuer que
 c'est nécessaire.
 
 \subsection{Bruit de mesure}
+
+On fait varier l'écart-type $\sigma$ du bruit $\epsilon_k$ dans la mesure
+$Y_k = z_k - h_{\mathrm{MNT}}(x_k, y_k) + \epsilon_k$, c'est-à-dire la précision du
+radio-altimètre. Le filtre utilise la même valeur de $\sigma$ dans le calcul des poids.
 
 \begin{table}[H]
 \centering
