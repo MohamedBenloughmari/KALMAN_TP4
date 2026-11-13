@@ -235,13 +235,12 @@ nous avons gardé celui du code fourni.
 \end{figure}
 
 La figure \ref{fig:nuage} montre comment le filtre localise l'avion. Au départ, le
-nuage est large d'une vingtaine de kilomètres et son centre est à $2{,}1$~km de la vraie
-position. À $t = 30$~s, il s'est séparé en plusieurs groupes de particules : plusieurs zones de la
-carte sont encore compatibles avec les mesures, ce qui confirme que la loi est
-multimodale. À $t = 100$~s, il reste un mode principal autour de la vraie position
-et quelques modes secondaires alignés : le nuage s'étend encore sur environ $18$~km,
-mais l'estimée n'est plus qu'à $620$~m de la vraie position. À $t = 400$~s, le nuage
-est unimodal et s'étend sur environ $1$~km en $x$ et $400$~m en $y$.
+nuage couvre une vingtaine de kilomètres et son centre n'est pas sur la vraie position.
+Après quelques mesures, il se sépare en plusieurs groupes de particules : plusieurs
+zones de la carte sont encore compatibles avec les altitudes mesurées, la loi est donc
+multimodale. Au fil du vol, les groupes dont le relief ne correspond plus aux mesures
+perdent leur poids et disparaissent à la redistribution. Il ne reste finalement qu'un
+seul groupe, resserré autour de la vraie position.
 
 \subsection{Erreurs d'estimation}
 
@@ -279,31 +278,31 @@ est unimodal et s'étend sur environ $1$~km en $x$ et $400$~m en $y$.
     \label{fig:z}
 \end{figure}
 
-Sur la figure \ref{fig:erreurs}, l'erreur horizontale reste d'environ $2$~km pendant
-les $50$ premières secondes, tant que plusieurs modes coexistent, avec un pic à
-$4{,}6$~km en $y$ à $t = 61$~s. Elle chute ensuite rapidement : elle passe
-définitivement sous $1$~km à $t = 122$~s, quand l'avion a survolé assez de relief pour
-ne garder qu'une zone. Elle continue ensuite de diminuer plus lentement : sous
-$500$~m après $247$~s, sous $200$~m après $375$~s. Sur la seconde moitié du vol elle
-vaut $82$~m en moyenne, et à la fin $22$~m en $x$ et $-40$~m en $y$, alors que la
-maille de la carte fait plusieurs centaines de mètres.
+L'erreur en position (figure \ref{fig:erreurs}) évolue en trois phases. Au début elle
+reste de l'ordre de $2$~km, et elle augmente même par moments : tant que plusieurs modes
+coexistent, la moyenne pondérée des particules tombe entre les modes et ne suit pas la
+vraie position. Elle chute ensuite brutalement, au bout d'environ deux minutes, quand
+il ne reste qu'un seul mode. Enfin elle diminue lentement jusqu'à la fin du vol, où
+elle est inférieure à $100$~m, c'est-à-dire plus petite que la maille de la carte.
 
-Les vitesses convergent plus lentement que les positions : elles ne sont pas mesurées
-directement, le filtre les retrouve seulement à partir de l'évolution de la position.
-L'erreur sur $v_x$ et $v_y$ dépasse encore $2$~m/s jusqu'à $t = 248$~s et $t = 291$~s,
-et $1$~m/s jusqu'à $t = 540$~s et $t = 638$~s. Elle finit en dessous de $0{,}2$~m/s.
+Les vitesses convergent plus lentement que les positions. Elles n'apparaissent pas dans
+la mesure : le filtre ne les retrouve qu'à travers le modèle
+$x_k = x_{k-1} + \Delta t\, \dot x_{k-1}$, c'est-à-dire en observant comment la position
+évolue. Il faut donc que la position soit bien connue pendant un certain temps avant
+que la vitesse le soit. En fin de vol l'erreur est inférieure à $0{,}2$~m/s.
 
-L'altitude (figure \ref{fig:z}) se comporte différemment. Dès la première mesure,
-son incertitude à $3\sigma$ passe de $1490$~m à $171$~m (à $t = 0$ elle sort du cadre
-de la figure), car la mesure donne directement $z$ à l'altitude du relief près. Elle ne
-devient ensuite précise que vers $125$ à $150$~s, en même temps que la position :
-l'incertitude vaut encore $46$~m à $t = 121$~s, puis $24$~m à $t = 150$~s. Tant que la
-position est mal connue, l'altitude du relief sous l'avion l'est aussi. L'erreur vaut
-$-68$~m au départ, reste sous $20$~m après $t = 125$~s et vaut $1{,}5$~m à la fin.
+L'altitude (figure \ref{fig:z}) se comporte différemment. La mesure s'écrit
+$z = Y + h_{\mathrm{MNT}}(x, y) - \epsilon$ : une seule mesure donne donc $z$, à
+l'altitude du relief près. C'est pourquoi l'incertitude sur $z$ est divisée par presque
+dix dès la première mesure. Elle ne devient ensuite vraiment précise qu'en même temps
+que la position : tant qu'on ne sait pas où est l'avion, on ne connaît pas l'altitude
+du relief en dessous. L'erreur finale est de l'ordre du mètre.
 
-Le filtre effectue $62$ redistributions sur les $720$ pas, dont $23$ pendant les $100$
-premières secondes. C'est logique : au début le nuage est très large, peu de particules
-sont compatibles avec la mesure et les poids dégénèrent vite.
+Les redistributions sont beaucoup plus fréquentes au début du vol (plus d'un tiers
+ont lieu pendant les $100$ premières secondes). Au début le nuage est très large : peu
+de particules sont compatibles avec la mesure, donc les poids se concentrent vite et
+$N_{\mathrm{eff}}$ passe souvent sous le seuil. Une fois le nuage resserré, les
+particules ont des poids plus proches et les redistributions s'espacent.
 
 \begin{figure}[H]
     \centering
@@ -323,11 +322,12 @@ sont compatibles avec la mesure et les poids dégénèrent vite.
 \end{figure}
 
 La figure \ref{fig:3sigma} montre que l'erreur reste à l'intérieur de l'incertitude
-à $3\sigma$ calculée à partir de $P_k$, et cela pendant tout le vol pour les six
-composantes de l'état : le filtre ne se croit pas plus précis qu'il ne l'est.
-L'incertitude à $3\sigma$ en $x$ et $y$ passe sous $3$~km à $t = 121$~s. En fin de vol
-elle vaut $307$~m en $x$ et $381$~m en $y$, ce qui est plutôt prudent par rapport à
-l'erreur réelle ($22$~m et $40$~m).
+à $3\sigma$ calculée à partir de $P_k$ pendant tout le vol : le filtre ne se croit pas
+plus précis qu'il ne l'est. L'incertitude suit les mêmes phases que l'erreur : elle
+reste grande tant que le nuage est multimodal, puis s'effondre quand il ne reste qu'un
+mode. En fin de vol elle est nettement plus grande que l'erreur réelle (environ $300$ à
+$400$~m contre quelques dizaines de mètres). Cela vient en partie de la régularisation,
+qui élargit le nuage à chaque redistribution.
 
 \section{Influence des paramètres}
 
@@ -401,7 +401,7 @@ C'est le paramètre qui a le plus d'effet (figure \ref{fig:h}, tableau \ref{tab:
 \begin{itemize}
 \item \textbf{Sans régularisation} (filtre SIR), le filtre diverge $18$ fois sur $20$.
 C'est le problème décrit plus haut : les copies restent collées car le bruit d'état
-est trop faible. Sur la figure \ref{fig:h}, l'erreur dépasse $7$~km à $t = 100$~s et atteint $14$~km à la fin.
+est trop faible. Sur la figure \ref{fig:h}, l'erreur augmente pendant presque tout le vol au lieu de diminuer.
 \item \textbf{Avec \texttt{CoefHopt} $= 0{,}4$}, aucune divergence.
 \item \textbf{Avec \texttt{CoefHopt} $= 1$}, le filtre diverge à chaque fois. On lisse
 trop : chaque régularisation élargit le nuage (d'environ $16\,\%$ sur la variance avec
