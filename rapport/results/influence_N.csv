@@ -1,0 +1,6 @@
+N,divergences,essais,erreur_moyenne_m,redistributions_par_vol
+500,11,20,293,86
+1000,1,20,87,57
+2000,1,20,84,58
+5000,0,20,80,55
+10000,0,20,78,54

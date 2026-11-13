@@ -1,0 +1,6 @@
+coef_h,divergences,essais,erreur_moyenne_m,redistributions_par_vol
+0.0,18,20,99,105
+0.2,3,20,159,58
+0.4,0,20,80,55
+0.7,12,20,105,169
+1.0,20,20,,264

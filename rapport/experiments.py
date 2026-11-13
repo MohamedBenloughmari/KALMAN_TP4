@@ -1,7 +1,9 @@
 """
 Figures et tableaux du rapport TP4.   Usage : python experiments.py
-Les figures sont enregistrées dans figures/ et les tableaux affichés dans le terminal.
+Les figures sont enregistrées dans figures/ et tous les résultats chiffrés dans
+results/ (fichiers CSV). Le texte du rapport est écrit à partir de ces tableaux.
 """
+import csv
 import os
 
 import matplotlib
@@ -13,7 +15,9 @@ import rpf
 
 np.seterr(all="ignore")
 FIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "figures")
+RES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 os.makedirs(FIG, exist_ok=True)
+os.makedirs(RES, exist_ok=True)
 NB_ESSAIS = int(os.environ.get("NB_ESSAIS", 20))   # nombre de tirages pour les tableaux
 SEUIL_DIV = 500.0   # m : erreur horizontale finale au-delà de laquelle on dit que le filtre a divergé
 
@@ -22,6 +26,19 @@ def sauver(nom):
     plt.tight_layout()
     plt.savefig(os.path.join(FIG, nom), dpi=150)
     plt.close()
+
+
+def ecrire_csv(nom, entetes, lignes):
+    with open(os.path.join(RES, nom), "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(entetes)
+        w.writerows(lignes)
+
+
+def dernier_instant_au_dessus(x, seuil):
+    """Dernier instant (s) où |x| dépasse le seuil ; -1 si jamais."""
+    i = np.where(~(np.abs(x) <= seuil))[0]
+    return int(i[-1]) if len(i) else -1
 
 
 def erreur_horizontale(r):
@@ -72,36 +89,39 @@ for i, k in enumerate(instants):
         plt.ylabel("y (km)"); plt.legend()
 sauver("nuage.png")
 
-# erreurs en position et en vitesse
-plt.figure(figsize=(11, 4))
-plt.subplot(1, 2, 1)
+# erreurs en position, en vitesse et en altitude, instants de redistribution
+# (une image par courbe : elles sont placées côte à côte dans le rapport)
+plt.figure(figsize=(5.5, 4))
 plt.plot(t, err[0], "b", label="erreur en x (m)")
 plt.plot(t, err[1], "r", label="erreur en y (m)")
 plt.xlabel("temps (s)"); plt.grid(); plt.legend()
-plt.subplot(1, 2, 2)
+sauver("erreur_position.png")
+
+plt.figure(figsize=(5.5, 4))
 plt.plot(t, err[3], "b", label="erreur en vx (m/s)")
 plt.plot(t, err[4], "r", label="erreur en vy (m/s)")
 plt.xlabel("temps (s)"); plt.grid(); plt.legend()
-sauver("erreurs_xy.png")
+sauver("erreur_vitesse.png")
 
-# erreur en altitude et instants de redistribution
-plt.figure(figsize=(11, 4))
-plt.subplot(1, 2, 1)
+plt.figure(figsize=(5.5, 4))
+plt.fill_between(t, -3 * Xstd[2], 3 * Xstd[2], color="lightgray", label=r"incertitude ($3\sigma$)")
 plt.plot(t, err[2], "b", label="erreur en z (m)")
+plt.ylim(-200, 200)   # à t = 0 l'incertitude vaut 1490 m : elle sort du cadre
 plt.xlabel("temps (s)"); plt.grid(); plt.legend()
-plt.subplot(1, 2, 2)
-plt.plot(t, r["resampled"], "b", lw=0.8, label="instants de redistribution")
-plt.xlabel("temps (s)"); plt.legend(loc="upper right")
-sauver("erreur_z_redistribution.png")
+sauver("erreur_z.png")
+
+plt.figure(figsize=(5.5, 4))
+plt.plot(t, r["resampled"], "b", lw=0.8)
+plt.xlabel("temps (s)"); plt.yticks([0, 1])
+sauver("redistribution.png")
 
 # erreurs en x et y avec l'incertitude à 3 sigma
-plt.figure(figsize=(11, 4))
-for i, (j, nom) in enumerate(((0, "x (m)"), (1, "y (m)"))):
-    plt.subplot(1, 2, i + 1)
+for j, nom in ((0, "x"), (1, "y")):
+    plt.figure(figsize=(5.5, 4))
     plt.fill_between(t, -3 * Xstd[j], 3 * Xstd[j], color="lightgray", label=r"incertitude ($3\sigma$)")
-    plt.plot(t, err[j], "b", label="erreur en " + nom)
+    plt.plot(t, err[j], "b", label=f"erreur en {nom} (m)")
     plt.xlabel("temps (s)"); plt.grid(); plt.legend()
-sauver("erreurs_3sigma.png")
+    sauver(f"erreur_3sigma_{nom}.png")
 
 eh = erreur_horizontale(r)
 print("Référence (graine 0)")
@@ -112,6 +132,58 @@ print("  erreurs finales :", np.round(err[:, -1], 2))
 print("  erreur horizontale moyenne (2e moitié) :", round(eh[T // 2:].mean()), "m")
 print("  3 sigma finaux x, y :", np.round(3 * Xstd[:2, -1]))
 
+# --- tableaux de la réalisation de référence ---
+noms = ["x", "y", "z", "vx", "vy", "vz"]
+# série temporelle complète
+ecrire_csv("reference_serie.csv",
+           ["t"] + ["err_" + n for n in noms] + ["err_horizontale"] + ["3sigma_" + n for n in noms]
+           + ["Neff", "redistribution"],
+           [[k] + [round(err[i, k], 3) for i in range(6)] + [round(eh[k], 1)]
+            + [round(3 * Xstd[i, k], 3) for i in range(6)] + [round(r["Neff"][k]), int(r["resampled"][k])]
+            for k in range(T)])
+# valeurs à quelques instants
+ecrire_csv("reference_instants.csv",
+           ["t", "err_x", "err_y", "err_horizontale", "err_z", "err_vx", "err_vy",
+            "3sigma_x", "3sigma_y", "3sigma_z", "redistributions_cumulees"],
+           [[k, round(err[0, k]), round(err[1, k]), round(eh[k]), round(err[2, k], 1),
+             round(err[3, k], 2), round(err[4, k], 2), round(3 * Xstd[0, k]), round(3 * Xstd[1, k]),
+             round(3 * Xstd[2, k]), int(r["resampled"][:k + 1].sum())]
+            for k in (0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 150, 170, 200, 250,
+                      300, 350, 400, 500, 600, T - 1)])
+# résumé
+resume = [["h", round(r["h"], 4)],
+          ["nombre de redistributions", int(r["resampled"].sum())],
+          ["redistributions avant 100 s", int(r["resampled"][:100].sum())],
+          ["erreur horizontale initiale (m)", round(eh[0])],
+          ["erreur horizontale moyenne 2e moitie (m)", round(eh[T // 2:].mean())]]
+for i in range(6):
+    resume.append([f"erreur finale {noms[i]}", round(err[i, -1], 2)])
+    resume.append([f"max |erreur {noms[i]}|", round(np.abs(err[i]).max(), 2)])
+    resume.append([f"instant du max |erreur {noms[i]}| (s)", int(np.abs(err[i]).argmax())])
+    resume.append([f"3 sigma final {noms[i]}", round(3 * Xstd[i, -1], 2)])
+    resume.append([f"part du temps ou |erreur {noms[i]}| <= 3 sigma (%)",
+                   round(100 * (np.abs(err[i]) <= 3 * Xstd[i]).mean(), 1)])
+for seuil in (3000, 2000, 1000, 500, 300, 200, 100):
+    resume.append([f"dernier instant ou erreur horizontale > {seuil} m (s)", dernier_instant_au_dessus(eh, seuil)])
+for seuil in (1000, 500):
+    resume.append([f"dernier instant ou |erreur x| > {seuil} m (s)", dernier_instant_au_dessus(err[0], seuil)])
+    resume.append([f"dernier instant ou |erreur y| > {seuil} m (s)", dernier_instant_au_dessus(err[1], seuil)])
+for seuil in (50, 30, 20, 10):
+    resume.append([f"dernier instant ou |erreur z| > {seuil} m (s)", dernier_instant_au_dessus(err[2], seuil)])
+for seuil in (3, 2, 1, 0.5, 0.2):
+    resume.append([f"dernier instant ou |erreur vx| > {seuil} m/s (s)", dernier_instant_au_dessus(err[3], seuil)])
+    resume.append([f"dernier instant ou |erreur vy| > {seuil} m/s (s)", dernier_instant_au_dessus(err[4], seuil)])
+for seuil in (3000, 1000, 500):
+    resume.append([f"dernier instant ou 3 sigma x > {seuil} m (s)", dernier_instant_au_dessus(3 * Xstd[0], seuil)])
+    resume.append([f"dernier instant ou 3 sigma y > {seuil} m (s)", dernier_instant_au_dessus(3 * Xstd[1], seuil)])
+ecrire_csv("reference_resume.csv", ["grandeur", "valeur"], resume)
+# nuage de particules aux instants affichés
+ecrire_csv("reference_nuage.csv",
+           ["t", "etendue_x_m", "etendue_y_m", "ecart_type_x_m", "ecart_type_y_m",
+            "distance_estime_vrai_m"],
+           [[k, round(np.ptp(r["clouds"][k][0][0])), round(np.ptp(r["clouds"][k][0][1])),
+             round(Xstd[0, k]), round(Xstd[1, k]), round(eh[k])] for k in instants])
+
 
 # ----------------------------------------------------------------------
 # 2. Influence des paramètres
@@ -120,6 +192,7 @@ def tableau(titre, nom_param, valeurs):
     """Pour chaque valeur du paramètre : NB_ESSAIS tirages, nombre de divergences
     et erreur horizontale moyenne (2e moitié du vol) sur les essais qui convergent."""
     print("\n" + titre)
+    lignes = []
     for v in valeurs:
         nb_div, erreurs, nb_red = 0, [], []
         for s in range(NB_ESSAIS):
@@ -133,15 +206,26 @@ def tableau(titre, nom_param, valeurs):
         moy = f"{np.mean(erreurs):6.0f} m" if erreurs else "   -    "
         print(f"  {nom_param} = {v:<8} divergences : {nb_div:2d}/{NB_ESSAIS}   erreur : {moy}"
               f"   redistributions : {np.mean(nb_red):5.0f}")
+        lignes.append([v, nb_div, NB_ESSAIS, round(np.mean(erreurs)) if erreurs else "",
+                       round(np.mean(nb_red))])
+    ecrire_csv(f"influence_{nom_param}.csv",
+               [nom_param, "divergences", "essais", "erreur_moyenne_m", "redistributions_par_vol"], lignes)
 
 
 def courbes(nom_param, valeurs, etiquettes, fichier, seed=0):
     plt.figure(figsize=(7, 4))
+    lignes = []
     for v, lab in zip(valeurs, etiquettes):
         res = rpf.run(seed=seed, **{nom_param: v})
         e = erreur_horizontale(res)
         print(f"  courbe {nom_param} = {v} : erreur finale {e[-1]:.0f} m")
         plt.semilogy(t, e, label=lab)
+        lignes.append([v, round(e[0]), round(np.nanmin(e)), int(np.nanargmin(e)), round(e[100]),
+                       round(e[300]), round(e[500]), round(e[-1]),
+                       dernier_instant_au_dessus(e, 1000), dernier_instant_au_dessus(e, 500)])
+    ecrire_csv(f"courbes_{nom_param}.csv",
+               [nom_param, "err_initiale", "err_min", "instant_err_min", "err_100s", "err_300s",
+                "err_500s", "err_finale", "dernier_instant_sup_1000m", "dernier_instant_sup_500m"], lignes)
     plt.ylim(10, 5e4)
     plt.xlabel("temps (s)"); plt.ylabel("erreur horizontale (m)")
     plt.grid(which="both", alpha=0.4); plt.legend()
@@ -190,6 +274,7 @@ sauver("depart_relief.png")
 # NB_ESSAIS tirages par départ
 print("\nPosition de départ")
 plt.figure(figsize=(7, 4))
+lignes, medianes = [], []
 for i, (x0, y0) in enumerate(departs):
     nb_div, erreurs, nb_red, toutes = 0, [], [], []
     for s in range(NB_ESSAIS):
@@ -208,6 +293,19 @@ for i, (x0, y0) in enumerate(departs):
           f"écart-type {reliefs[i].std():.0f} m | divergences {nb_div:2d}/{NB_ESSAIS} | erreur {moy} | "
           f"redistributions {np.mean(nb_red):.0f} | médiane à 100 s : {mediane[100]:.0f} m, "
           f"à 300 s : {mediane[300]:.0f} m, finale : {mediane[-1]:.0f} m")
+    medianes.append(mediane)
+    lignes.append([i + 1, x0, y0, round(reliefs[i].min()), round(reliefs[i].max()),
+                   round(reliefs[i].max() - reliefs[i].min()), round(reliefs[i].std()),
+                   nb_div, NB_ESSAIS, round(np.mean(erreurs)) if erreurs else "", round(np.mean(nb_red)),
+                   round(mediane[100]), round(mediane[300]), round(mediane[-1]),
+                   dernier_instant_au_dessus(mediane, 1000), dernier_instant_au_dessus(mediane, 500)])
+ecrire_csv("depart.csv",
+           ["depart", "x0_km", "y0_km", "relief_min_m", "relief_max_m", "relief_amplitude_m",
+            "relief_ecart_type_m", "divergences", "essais", "erreur_moyenne_m", "redistributions_par_vol",
+            "mediane_100s_m", "mediane_300s_m", "mediane_finale_m",
+            "dernier_instant_mediane_sup_1000m", "dernier_instant_mediane_sup_500m"], lignes)
+ecrire_csv("depart_mediane.csv", ["t"] + [f"depart_{i + 1}" for i in range(len(departs))],
+           [[k] + [round(m[k], 1) for m in medianes] for k in range(T)])
 plt.ylim(10, 5e4)
 plt.xlabel("temps (s)"); plt.ylabel("erreur horizontale médiane (m)")
 plt.grid(which="both", alpha=0.4); plt.legend()

@@ -1,0 +1,67 @@
+grandeur,valeur
+h,0.1592
+nombre de redistributions,62
+redistributions avant 100 s,23
+erreur horizontale initiale (m),2130
+erreur horizontale moyenne 2e moitie (m),82
+erreur finale x,21.59
+max |erreur x|,2089.07
+instant du max |erreur x| (s),61
+3 sigma final x,307.42
+part du temps ou |erreur x| <= 3 sigma (%),100.0
+erreur finale y,-39.93
+max |erreur y|,4572.86
+instant du max |erreur y| (s),61
+3 sigma final y,381.43
+part du temps ou |erreur y| <= 3 sigma (%),100.0
+erreur finale z,1.46
+max |erreur z|,67.78
+instant du max |erreur z| (s),0
+3 sigma final z,19.84
+part du temps ou |erreur z| <= 3 sigma (%),100.0
+erreur finale vx,-0.14
+max |erreur vx|,6.21
+instant du max |erreur vx| (s),123
+3 sigma final vx,3.35
+part du temps ou |erreur vx| <= 3 sigma (%),100.0
+erreur finale vy,-0.12
+max |erreur vy|,5.3
+instant du max |erreur vy| (s),238
+3 sigma final vy,3.76
+part du temps ou |erreur vy| <= 3 sigma (%),100.0
+erreur finale vz,-0.01
+max |erreur vz|,4.97
+instant du max |erreur vz| (s),4
+3 sigma final vz,0.28
+part du temps ou |erreur vz| <= 3 sigma (%),100.0
+dernier instant ou erreur horizontale > 3000 m (s),65
+dernier instant ou erreur horizontale > 2000 m (s),84
+dernier instant ou erreur horizontale > 1000 m (s),122
+dernier instant ou erreur horizontale > 500 m (s),247
+dernier instant ou erreur horizontale > 300 m (s),364
+dernier instant ou erreur horizontale > 200 m (s),375
+dernier instant ou erreur horizontale > 100 m (s),712
+dernier instant ou |erreur x| > 1000 m (s),86
+dernier instant ou |erreur y| > 1000 m (s),122
+dernier instant ou |erreur x| > 500 m (s),247
+dernier instant ou |erreur y| > 500 m (s),175
+dernier instant ou |erreur z| > 50 m (s),0
+dernier instant ou |erreur z| > 30 m (s),122
+dernier instant ou |erreur z| > 20 m (s),125
+dernier instant ou |erreur z| > 10 m (s),674
+dernier instant ou |erreur vx| > 3 m/s (s),248
+dernier instant ou |erreur vy| > 3 m/s (s),259
+dernier instant ou |erreur vx| > 2 m/s (s),248
+dernier instant ou |erreur vy| > 2 m/s (s),291
+dernier instant ou |erreur vx| > 1 m/s (s),540
+dernier instant ou |erreur vy| > 1 m/s (s),638
+dernier instant ou |erreur vx| > 0.5 m/s (s),692
+dernier instant ou |erreur vy| > 0.5 m/s (s),692
+dernier instant ou |erreur vx| > 0.2 m/s (s),712
+dernier instant ou |erreur vy| > 0.2 m/s (s),714
+dernier instant ou 3 sigma x > 3000 m (s),121
+dernier instant ou 3 sigma y > 3000 m (s),121
+dernier instant ou 3 sigma x > 1000 m (s),373
+dernier instant ou 3 sigma y > 1000 m (s),224
+dernier instant ou 3 sigma x > 500 m (s),395
+dernier instant ou 3 sigma y > 500 m (s),260

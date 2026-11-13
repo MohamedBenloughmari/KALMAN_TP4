@@ -1,0 +1,4 @@
+N,err_initiale,err_min,instant_err_min,err_100s,err_300s,err_500s,err_finale,dernier_instant_sup_1000m,dernier_instant_sup_500m
+500,1954,680,21,2138,2962,3460,4153,719,719
+2000,2054,16,435,243,178,56,19,84,238
+5000,2130,3,454,622,229,35,45,122,247

@@ -1,0 +1,4 @@
+coef_h,err_initiale,err_min,instant_err_min,err_100s,err_300s,err_500s,err_finale,dernier_instant_sup_1000m,dernier_instant_sup_500m
+0.0,2130,1331,7,7567,8415,10607,14432,719,719
+0.4,2130,3,454,622,229,35,45,122,247
+1.0,2130,2066,1,20185,69656,5187684,26935249,719,719

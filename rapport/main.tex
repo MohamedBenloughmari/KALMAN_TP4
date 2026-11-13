@@ -3,11 +3,13 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[french]{babel}
+\frenchsetup{StandardItemLabels=true}
 \usepackage[a4paper,margin=1in]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{float}
+\usepackage{subcaption}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
 
 \graphicspath{{figures/}}
@@ -62,8 +64,8 @@ estimé. Or, au départ, l'erreur de position est de l'ordre de $3$~km : la pent
 estimé n'a rien à voir avec la pente au point réel.
 \item Une mesure d'altitude ne donne pas un point de la carte : beaucoup d'endroits
 ont la même altitude. Au début, plusieurs zones éloignées expliquent aussi bien les
-mesures. La loi de l'état a alors plusieurs « bosses » (elle est multimodale), ce qu'une
-gaussienne ne peut pas représenter.
+mesures. La loi de l'état possède alors plusieurs maxima locaux (elle est multimodale),
+ce qu'une gaussienne ne peut pas représenter.
 \end{itemize}
 
 Le filtre particulaire n'a pas ces limites : il représente la loi de l'état par un
@@ -142,16 +144,16 @@ aucune copie n'est proche du vrai état, le filtre est perdu.
 \subsection{Idée}
 
 Au lieu de dupliquer exactement les particules, on ajoute à chaque copie un petit
-décalage aléatoire. Cela revient à remplacer chaque particule (un point) par une
-petite « bosse » centrée sur elle, appelée noyau $K$, puis à tirer les nouvelles
-particules dans la densité lissée obtenue :
+décalage aléatoire. Cela revient à remplacer la masse de Dirac associée à chaque
+particule par une densité de probabilité centrée sur cette particule, appelée noyau
+$K$, puis à tirer les nouvelles particules dans la densité lissée obtenue :
 \begin{equation}
 \hat p(x) = \sum_j w^j \, \delta(x - X^j)
 \quad \longrightarrow \quad
 \hat p_h(x) = \sum_j w^j \, K_h(x - X^j),
 \qquad K_h(x) = \frac{1}{h^d} K\!\left(\frac{x}{h}\right).
 \end{equation}
-Le paramètre $h$ règle la largeur des bosses. S'il est trop petit, on retrouve le
+Le paramètre $h$, appelé pas ou largeur de bande, règle la largeur du noyau. S'il est trop petit, on retrouve le
 filtre SIR. S'il est trop grand, on étale trop le nuage et on perd l'information
 apportée par les mesures.
 
@@ -206,10 +208,8 @@ Noyau & gaussien \\
 \end{table}
 
 Le centre du nuage initial est tiré au hasard autour de la vraie position : le filtre
-ne part donc pas du bon endroit. Le code fourni utilise des valeurs un peu différentes
-de l'énoncé ($0{,}3$ pour \texttt{CoefHopt}, $0{,}5$ pour le seuil) ; nous avons repris
-celles de l'énoncé. Le bruit d'état $Q$ n'est pas donné dans l'énoncé, nous avons gardé
-celui du code fourni.
+ne part donc pas du bon endroit. Le bruit d'état $Q$ n'est pas donné dans l'énoncé,
+nous avons gardé celui du code fourni.
 
 \begin{figure}[H]
     \centering
@@ -230,46 +230,76 @@ celui du code fourni.
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{nuage.png}
-    \caption{Nuage de particules à quatre instants (attention, l'échelle change).}
+    \caption{Nuage de particules à quatre instants.}
     \label{fig:nuage}
 \end{figure}
 
 La figure \ref{fig:nuage} montre comment le filtre localise l'avion. Au départ, le
 nuage est large d'une vingtaine de kilomètres et son centre est à $2{,}1$~km de la vraie
-position. À $t = 30$~s, il s'est séparé en plusieurs paquets : plusieurs zones de la
+position. À $t = 30$~s, il s'est séparé en plusieurs groupes de particules : plusieurs zones de la
 carte sont encore compatibles avec les mesures, ce qui confirme que la loi est
-multimodale. À $t = 100$~s, il reste un paquet principal autour de la vraie position
-et quelques petits paquets alignés. À $t = 400$~s, il n'y a plus qu'un seul paquet,
-large de quelques centaines de mètres.
+multimodale. À $t = 100$~s, il reste un mode principal autour de la vraie position
+et quelques modes secondaires alignés : le nuage s'étend encore sur environ $18$~km,
+mais l'estimée n'est plus qu'à $620$~m de la vraie position. À $t = 400$~s, le nuage
+est unimodal et s'étend sur environ $1$~km en $x$ et $400$~m en $y$.
 
 \subsection{Erreurs d'estimation}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{erreurs_xy.png}
-    \caption{Erreurs en position (à gauche) et en vitesse (à droite).}
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{erreur_position.png}
+        \caption{Erreurs en position}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{erreur_vitesse.png}
+        \caption{Erreurs en vitesse}
+    \end{subfigure}
+    \caption{Erreurs d'estimation horizontales.}
     \label{fig:erreurs}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{erreur_z_redistribution.png}
-    \caption{Erreur en altitude (à gauche) et instants de redistribution (à droite).}
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{erreur_z.png}
+        \caption{Erreur en altitude et incertitude à $3\sigma$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{redistribution.png}
+        \caption{Instants de redistribution}
+    \end{subfigure}
+    \caption{Erreur en altitude et redistributions.}
     \label{fig:z}
 \end{figure}
 
-Sur la figure \ref{fig:erreurs}, l'erreur en position est de plusieurs kilomètres
-pendant la première minute (jusqu'à $4{,}5$~km en $y$), tant que plusieurs paquets
-coexistent. Elle chute ensuite entre $100$ et $250$~s, quand l'avion a survolé assez de
-relief pour ne garder qu'une zone. À la fin du vol, l'erreur est de $22$~m en $x$ et
-$-40$~m en $y$, alors que la maille de la carte fait plusieurs centaines de mètres.
+Sur la figure \ref{fig:erreurs}, l'erreur horizontale reste d'environ $2$~km pendant
+les $50$ premières secondes, tant que plusieurs modes coexistent, avec un pic à
+$4{,}6$~km en $y$ à $t = 61$~s. Elle chute ensuite rapidement : elle passe
+définitivement sous $1$~km à $t = 122$~s, quand l'avion a survolé assez de relief pour
+ne garder qu'une zone. Elle continue ensuite de diminuer plus lentement : sous
+$500$~m après $247$~s, sous $200$~m après $375$~s. Sur la seconde moitié du vol elle
+vaut $82$~m en moyenne, et à la fin $22$~m en $x$ et $-40$~m en $y$, alors que la
+maille de la carte fait plusieurs centaines de mètres.
 
 Les vitesses convergent plus lentement que les positions : elles ne sont pas mesurées
 directement, le filtre les retrouve seulement à partir de l'évolution de la position.
-L'erreur finit en dessous de $0{,}2$~m/s.
+L'erreur sur $v_x$ et $v_y$ dépasse encore $2$~m/s jusqu'à $t = 248$~s et $t = 291$~s,
+et $1$~m/s jusqu'à $t = 540$~s et $t = 638$~s. Elle finit en dessous de $0{,}2$~m/s.
 
-L'altitude (figure \ref{fig:z}) converge beaucoup plus vite que le reste, car elle
-intervient directement dans la mesure. L'erreur finale est de $1{,}5$~m.
+L'altitude (figure \ref{fig:z}) se comporte différemment. Dès la première mesure,
+son incertitude à $3\sigma$ passe de $1490$~m à $171$~m (à $t = 0$ elle sort du cadre
+de la figure), car la mesure donne directement $z$ à l'altitude du relief près. Elle ne
+devient ensuite précise que vers $125$ à $150$~s, en même temps que la position :
+l'incertitude vaut encore $46$~m à $t = 121$~s, puis $24$~m à $t = 150$~s. Tant que la
+position est mal connue, l'altitude du relief sous l'avion l'est aussi. L'erreur vaut
+$-68$~m au départ, reste sous $20$~m après $t = 125$~s et vaut $1{,}5$~m à la fin.
 
 Le filtre effectue $62$ redistributions sur les $720$ pas, dont $23$ pendant les $100$
 premières secondes. C'est logique : au début le nuage est très large, peu de particules
@@ -277,15 +307,27 @@ sont compatibles avec la mesure et les poids dégénèrent vite.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{erreurs_3sigma.png}
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{erreur_3sigma_x.png}
+        \caption{Erreur en $x$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{erreur_3sigma_y.png}
+        \caption{Erreur en $y$}
+    \end{subfigure}
     \caption{Erreurs en $x$ et $y$ avec l'incertitude à $3\sigma$ donnée par le filtre.}
     \label{fig:3sigma}
 \end{figure}
 
 La figure \ref{fig:3sigma} montre que l'erreur reste à l'intérieur de l'incertitude
-à $3\sigma$ calculée à partir de $P_k$ : le filtre ne se croit pas plus précis qu'il
-ne l'est. En fin de vol cette incertitude vaut environ $300$ à $400$~m, ce qui est
-plutôt prudent par rapport à l'erreur réelle.
+à $3\sigma$ calculée à partir de $P_k$, et cela pendant tout le vol pour les six
+composantes de l'état : le filtre ne se croit pas plus précis qu'il ne l'est.
+L'incertitude à $3\sigma$ en $x$ et $y$ passe sous $3$~km à $t = 121$~s. En fin de vol
+elle vaut $307$~m en $x$ et $381$~m en $y$, ce qui est plutôt prudent par rapport à
+l'erreur réelle ($22$~m et $40$~m).
 
 \section{Influence des paramètres}
 
@@ -359,7 +401,7 @@ C'est le paramètre qui a le plus d'effet (figure \ref{fig:h}, tableau \ref{tab:
 \begin{itemize}
 \item \textbf{Sans régularisation} (filtre SIR), le filtre diverge $18$ fois sur $20$.
 C'est le problème décrit plus haut : les copies restent collées car le bruit d'état
-est trop faible. Sur la figure \ref{fig:h}, l'erreur ne redescend jamais.
+est trop faible. Sur la figure \ref{fig:h}, l'erreur dépasse $7$~km à $t = 100$~s et atteint $14$~km à la fin.
 \item \textbf{Avec \texttt{CoefHopt} $= 0{,}4$}, aucune divergence.
 \item \textbf{Avec \texttt{CoefHopt} $= 1$}, le filtre diverge à chaque fois. On lisse
 trop : chaque régularisation élargit le nuage (d'environ $16\,\%$ sur la variance avec
@@ -496,7 +538,7 @@ sans doute plus de particules dans ce cas, ce que nous n'avons pas testé.
 Le filtre particulaire permet de traiter un problème où le filtre de Kalman ne
 s'applique pas : une mesure donnée par une carte, et une loi qui a plusieurs modes au
 début du vol. Avec les réglages de l'énoncé, le filtre régularisé retrouve la position
-de l'avion à quelques dizaines de mètres près en partant d'une incertitude de $3$~km,
+de l'avion à environ $80$~m près (moyenne sur $20$ essais) en partant d'une incertitude de $3$~km,
 et son incertitude à $3\sigma$ contient bien l'erreur réelle.
 
 L'étude des paramètres montre surtout l'importance de la régularisation. Sans elle,

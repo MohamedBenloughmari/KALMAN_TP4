@@ -1,0 +1,6 @@
+depart,x0_km,y0_km,relief_min_m,relief_max_m,relief_amplitude_m,relief_ecart_type_m,divergences,essais,erreur_moyenne_m,redistributions_par_vol,mediane_100s_m,mediane_300s_m,mediane_finale_m,dernier_instant_mediane_sup_1000m,dernier_instant_mediane_sup_500m
+1,60,280,68,145,77,15,16,20,333,35,2263,1222,791,382,719
+2,60,60,248,515,268,51,0,20,243,44,2105,223,124,223,280
+3,130,240,278,751,473,110,0,20,170,46,1714,193,135,154,164
+4,150,150,400,1254,854,214,0,20,80,55,1415,207,80,122,126
+5,160,150,384,1573,1189,299,6,20,56,109,3839,285,111,189,233
