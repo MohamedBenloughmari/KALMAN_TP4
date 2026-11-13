@@ -23,16 +23,16 @@
 
 \section*{Introduction}
 
-Dans ce TP, on cherche à retrouver la position et la vitesse d'un avion à partir d'un
+Dans ce travail, on cherche à retrouver la position et la vitesse d'un avion à partir d'un
 seul capteur : un radio-altimètre, qui mesure la hauteur de l'avion au-dessus du sol.
 En comparant cette hauteur à une carte du relief (le modèle numérique de terrain, MNT),
 on peut retrouver peu à peu où se trouve l'avion. La relation entre la position et la
-mesure passe par la carte : elle est très non linéaire, et le filtre de Kalman des TP
-précédents ne s'applique plus. On utilise donc un filtre particulaire.
+mesure passe par la carte : elle est très non linéaire, et le filtre de Kalman
+ne s'applique plus. On utilise donc un filtre particulaire.
 
 Le rapport suit cinq questions : pourquoi un filtre particulaire, comment fonctionne
 le filtre SIR et pourquoi il dégénère, ce qu'apporte la régularisation, les résultats
-sur le scénario du TP, et enfin l'influence des paramètres et de la position de départ.
+sur un scénario de référence, et enfin l'influence des paramètres et de la position de départ.
 
 \section{Modèle et intérêt du filtre particulaire}
 
@@ -159,7 +159,7 @@ apportée par les mesures.
 
 \subsection{Choix de $h$}
 
-Le cours donne une valeur optimale de $h$, qui dépend du nombre de particules $N$ et
+Il existe une valeur optimale de $h$, qui dépend du nombre de particules $N$ et
 de la dimension $d$ de l'état. Pour le noyau gaussien :
 \begin{equation}
 h_{\mathrm{opt}} = \left( \frac{4}{d+2} \right)^{\frac{1}{d+4}} N^{-\frac{1}{d+4}} .
@@ -185,7 +185,7 @@ ne peut pas leur ajouter le même bruit.
 On peut noter que ce décalage ajoute $h^2 P_k$ à la covariance du nuage : chaque
 régularisation élargit un peu le nuage, d'un facteur $1 + h^2$ sur la variance.
 
-\section{Résultats sur le scénario du TP}
+\section{Résultats sur le scénario de référence}
 
 \subsection{Paramètres}
 
@@ -204,12 +204,12 @@ Noyau & gaussien \\
 \texttt{CoefResampling} & $0{,}4$ (donc $N_{\mathrm{th}} = 2000$) \\
 \bottomrule
 \end{tabular}
-\caption{Paramètres du scénario de référence (ceux de l'énoncé).}
+\caption{Paramètres du scénario de référence.}
 \end{table}
 
 Le centre du nuage initial est tiré au hasard autour de la vraie position : le filtre
-ne part donc pas du bon endroit. Le bruit d'état $Q$ n'est pas donné dans l'énoncé,
-nous avons gardé celui du code fourni.
+ne part donc pas du bon endroit. Le bruit d'état $\eta_k$ est gaussien, d'écarts-types $0{,}5$~m sur $x$ et $y$,
+$0{,}1$~m sur $z$, $0{,}1$~m/s sur $\dot x$ et $\dot y$, et $0{,}01$~m/s sur $\dot z$.
 
 \begin{figure}[H]
     \centering
@@ -418,8 +418,8 @@ régularise plus souvent ($264$ fois par vol au lieu de $55$), et le nuage s'él
 encore. Le filtre s'emballe.
 \end{itemize}
 
-Il faut donc régulariser, mais pas trop. La valeur $0{,}4$ de l'énoncé est un bon
-compromis, ce qui explique la remarque du cours sur le sur-lissage.
+Il faut donc régulariser, mais pas trop. La valeur $0{,}4$ est un bon
+compromis : elle évite à la fois l'appauvrissement du nuage et le sur-lissage.
 
 Nous avons aussi essayé le noyau d'Epanechnikov à la place du noyau gaussien : aucune
 divergence sur $20$ essais et une erreur moyenne de $79$~m, contre $80$~m pour le noyau
@@ -470,15 +470,15 @@ Comme attendu, plus la mesure est précise, plus la position estimée est préci
 $24$~m d'erreur pour $\sigma = 5$~m contre $214$~m pour $\sigma = 100$~m. En revanche,
 avec une mesure très précise, la vraisemblance est très étroite et peu de particules
 gardent un poids important : le filtre doit redistribuer deux fois plus souvent
-($120$ fois au lieu de $55$). C'est le cas « peu de recouvrement entre la densité
-prédite et la vraisemblance » cité dans le cours.
+($120$ fois au lieu de $55$). C'est une limite connue du filtre particulaire : il fonctionne mal quand la densité
+prédite et la vraisemblance se recouvrent peu.
 
 \subsection{Position de départ}
 
 Jusqu'ici l'avion partait toujours du même point. Pour voir l'effet du relief survolé,
 nous avons testé cinq positions de départ (figure \ref{fig:depart_carte}), avec le
-même cap, la même vitesse et la même longueur de vol. Le départ 4 est celui de
-l'énoncé. Les départs sont classés du relief le plus plat au plus accidenté
+même cap, la même vitesse et la même longueur de vol. Le départ 4 est celui du
+scénario de référence. Les départs sont classés du relief le plus plat au plus accidenté
 (figure \ref{fig:depart_relief}).
 
 \begin{figure}[H]
@@ -526,8 +526,8 @@ $16$ fois sur $20$ et l'erreur médiane est encore de $800$~m à la fin. C'est c
 était prévu dans la première partie : sans relief, la mesure ne dit presque rien sur
 la position horizontale.
 \item \textbf{Relief moyen (départs 2 et 3).} Le filtre converge à chaque fois, mais il
-est moins précis que sur le scénario de l'énoncé ($243$~m et $170$~m contre $80$~m).
-\item \textbf{Départ de l'énoncé (départ 4).} Plus le relief est marqué, plus l'erreur
+est moins précis que sur le scénario de référence ($243$~m et $170$~m contre $80$~m).
+\item \textbf{Départ de référence (départ 4).} Plus le relief est marqué, plus l'erreur
 diminue : la précision suit bien la quantité de relief survolé.
 \item \textbf{Massif (départ 5).} C'est le cas le plus précis quand le filtre converge
 ($56$~m), mais il diverge $6$ fois sur $20$, ce que nous n'attendions pas. Sur un
@@ -545,7 +545,7 @@ sans doute plus de particules dans ce cas, ce que nous n'avons pas testé.
 
 Le filtre particulaire permet de traiter un problème où le filtre de Kalman ne
 s'applique pas : une mesure donnée par une carte, et une loi qui a plusieurs modes au
-début du vol. Avec les réglages de l'énoncé, le filtre régularisé retrouve la position
+début du vol. Avec les réglages de référence, le filtre régularisé retrouve la position
 de l'avion à environ $80$~m près (moyenne sur $20$ essais) en partant d'une incertitude de $3$~km,
 et son incertitude à $3\sigma$ contient bien l'erreur réelle.
 
@@ -553,7 +553,7 @@ L'étude des paramètres montre surtout l'importance de la régularisation. Sans
 le filtre SIR diverge presque toujours ici, parce que le bruit d'état est trop faible
 pour séparer les particules dupliquées. Mais si on régularise trop (coefficient $1$,
 ou redistribution à chaque pas), le nuage s'élargit sans arrêt et le filtre diverge
-aussi. Les valeurs de l'énoncé ($N = 5000$, \texttt{CoefHopt} $= 0{,}4$,
+aussi. Les valeurs retenues ($N = 5000$, \texttt{CoefHopt} $= 0{,}4$,
 \texttt{CoefResampling} $= 0{,}4$) se situent dans la zone où le filtre fonctionne bien.
 
 Le relief survolé compte autant que les réglages : au-dessus d'un terrain plat le
