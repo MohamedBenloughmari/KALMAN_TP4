@@ -1,7 +1,5 @@
 """
-Figures et tableaux du rapport TP4.   Usage : python experiments.py
-Les figures sont enregistrées dans figures/ et tous les résultats chiffrés dans
-results/ (fichiers CSV). Le texte du rapport est écrit à partir de ces tableaux.
+Figures et tableaux du rapport TP4.  
 """
 import csv
 import os
@@ -46,9 +44,7 @@ def erreur_horizontale(r):
     return np.hypot(e[0], e[1])
 
 
-# ----------------------------------------------------------------------
 # 1. Scénario de référence (réglages de l'énoncé)
-# ----------------------------------------------------------------------
 instants = (0, 30, 100, 400)
 r = rpf.run(seed=0, snaps=instants)
 terr = rpf.terrain()
@@ -132,7 +128,7 @@ print("  erreurs finales :", np.round(err[:, -1], 2))
 print("  erreur horizontale moyenne (2e moitié) :", round(eh[T // 2:].mean()), "m")
 print("  3 sigma finaux x, y :", np.round(3 * Xstd[:2, -1]))
 
-# --- tableaux de la réalisation de référence ---
+# tableaux de la réalisation de référence
 noms = ["x", "y", "z", "vx", "vy", "vz"]
 # série temporelle complète
 ecrire_csv("reference_serie.csv",
@@ -185,9 +181,7 @@ ecrire_csv("reference_nuage.csv",
              round(Xstd[0, k]), round(Xstd[1, k]), round(eh[k])] for k in instants])
 
 
-# ----------------------------------------------------------------------
 # 2. Influence des paramètres
-# ----------------------------------------------------------------------
 def tableau(titre, nom_param, valeurs):
     """Pour chaque valeur du paramètre : NB_ESSAIS tirages, nombre de divergences
     et erreur horizontale moyenne (2e moitié du vol) sur les essais qui convergent."""
@@ -243,9 +237,7 @@ tableau("Noyau (1 = Epanechnikov, 2 = gaussien)", "kernel", [1, 2])
 tableau("Seuil de redistribution", "coef_res", [0.2, 0.4, 0.6, 0.8, 1.0])
 tableau("Ecart-type du bruit de mesure", "sigma_true", [5.0, 30.0, 100.0])
 
-# ----------------------------------------------------------------------
 # 3. Influence de la position de départ (relief survolé)
-# ----------------------------------------------------------------------
 departs = [(60, 280), (60, 60), (130, 240), (150, 150), (160, 150)]   # en km
 couleurs = ["m", "darkorange", "b", "k", "r"]
 
