@@ -83,7 +83,8 @@ def terrain():
 
 
 def run(seed=0, N=5000, coef_h=0.4, coef_res=0.4, kernel=2, q_scale=1.0,
-        sigma_true=30.0, coef_R=1.0, sigma_xy0=3000.0, snaps=()):
+        sigma_true=30.0, coef_R=1.0, sigma_xy0=3000.0, snaps=(),
+        depart=(150e3, 150e3)):
     """Une réalisation du filtre.
 
     coef_h   : coefficient multiplicatif de h_opt (0 -> SIR, sans régularisation)
@@ -92,6 +93,7 @@ def run(seed=0, N=5000, coef_h=0.4, coef_res=0.4, kernel=2, q_scale=1.0,
     q_scale  : facteur multiplicatif de la covariance Q du bruit d'état
     coef_R   : rapport sigma_filtre / sigma_vrai
     snaps    : indices de temps où l'on conserve le nuage (x, y) et les poids
+    depart   : position vraie initiale (x, y) de l'avion, en mètres
     """
     rng = np.random.default_rng(seed)
     terr = terrain()
@@ -99,7 +101,7 @@ def run(seed=0, N=5000, coef_h=0.4, coef_res=0.4, kernel=2, q_scale=1.0,
 
     Vit = 300 * 1000 / 3600
     Cap = 45 * pi / 180
-    X0 = np.array([150e3, 150e3, 8000.0, Vit * np.cos(Cap), Vit * np.sin(Cap), 0.0])
+    X0 = np.array([depart[0], depart[1], 8000.0, Vit * np.cos(Cap), Vit * np.sin(Cap), 0.0])
     dt = 1.0
     T = int(round(60e3 / (Vit * dt)))
     P0 = np.diag(np.array([sigma_xy0, sigma_xy0, 500, 5, 5, 5], dtype=float) ** 2)
